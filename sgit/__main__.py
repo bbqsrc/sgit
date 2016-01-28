@@ -12,7 +12,10 @@ PATHS = [
     '/etc/sgit'
 ]
 
-GIT_CMDS = ['git-receive-pack', 'git-upload-pack']
+GIT_CMDS = {
+    'git-receive-pack': 'push',
+    'git-upload-pack': 'pull'
+}
 
 def get_cfg_path():
     for path in PATHS:
@@ -60,10 +63,12 @@ def sgit_shell():
     sys.stderr.flush()
 
     # Handle ordinary git ssh calls
-    first_arg = orig_cmd.split(' ', 1)[0]
-    if first_arg in GIT_CMDS:
-        if sgit.can_push_repo():
-            os.execvp('git', ['shell', '-c'] + shlex.split(cmd))
+    cmd_args = shlex.split(orig_cmd)
+    first = cmd_args[0]
+    if first in GIT_CMDS:
+        if (GIT_CMDS[first] == 'push' and sgit.can_push_repo(cmd_args[1])) or \
+                (GIT_CMDS[first] == 'pull' and sgit.can_pull_repo(cmd_args[1])):
+            os.execvp('git-shell', ['-c'] + cmd_args)
         else:
             return 2
 
