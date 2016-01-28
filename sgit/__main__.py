@@ -20,12 +20,6 @@ def get_cfg_path():
             continue
         if os.path.isdir(path):
             return path
-        else:
-            try:
-                os.makedirs(path)
-                return path
-            except:
-                pass
     raise Exception("No config path found!")
 
 def get_ssh_cmd():
@@ -49,6 +43,8 @@ def get_sgit_shell_argparse():
     return a
 
 def sgit_shell():
+    if len(sys.argv) < 3 or sys.argv[1] != '-c':
+        return 255
     a = get_sgit_shell_argparse()
 
     user = sys.argv[1]
