@@ -7,14 +7,14 @@ import shlex
 import subprocess
 import sys
 
-CMD = 'command="{cmd} {user}",no-port-forwarding,'
+CMD = 'command="{cmd} {user}",no-port-forwarding,' \
       'no-X11-forwarding,no-agent-forwarding,no-pty'
 
 CFG_TMPL = """\
 {
   "users": {},
   "admins": [],
-  "root": "/",
+  "root": "/srv/git",
   "repos": {}
 }
 """
@@ -22,8 +22,17 @@ CFG_TMPL = """\
 class SgitException(Exception):
     pass
 
-def dict_prop(dict_, key):
-    return property(lambda: dict_[key], lambda v: dict_[key] = v)
+def prop(k):
+    def pset(k):
+        def wrapper(self, v):
+            self._data[k] = v
+        return wrapper
+
+    def pget(k):
+        def wrapper(self):
+            return self._data[k]
+        return wrapper
+    return property(pget(k), pset(k))
 
 class SgitConfig:
     @classmethod
@@ -33,18 +42,18 @@ class SgitConfig:
 
     @classmethod
     def load(cls, path):
-        with f as open(os.path.join(path, 'config.json')):
+        with open(os.path.join(path, 'config.json')) as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
         return cls(data, path)
 
     def __init__(self, data, path):
-        self.__data = data
-        self.__path = path
+        self._data = data
+        self._path = path
 
-    root = dict_prop(self.__data, 'root')
-    users = dict_prop(self.__data, 'users')
-    admins = dict_prop(self.__data, 'admins')
-    repos = dict_prop(self.__data, 'repos')
+    root = prop('root')
+    users = prop('users')
+    admins = prop('admins')
+    repos = prop('repos')
 
     def resolve_path(self, repo_path):
         return os.path.join(self.root, repo_path)
@@ -57,9 +66,9 @@ class SgitConfig:
         return out.getvalue()
 
     def save(self):
-        path = self.__path
+        path = self._path
         with open(os.path.join(path, 'config.json'), 'w') as f:
-            json.dump(self.__data, f, indent=2)
+            json.dump(self._data, f, indent=2)
         with open(os.path.join(path, 'ssh_keys'), 'w') as f:
             f.write(self.generate_auth_keys_file())
 
@@ -114,10 +123,10 @@ class Sgit:
         repo = self.config.repos[repo_path]
         for user in users:
             if user not in self.config.users:
-                raise SgitException("User '%s' does not exist.")
+                raise SgitException("User '%s' does not exist." % user)
 
         for user in users:
             if user not in repo['users']:
-                repo.users.append(user)
+                repo['users'].append(user)
 
         self.config.save()

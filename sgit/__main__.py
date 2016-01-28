@@ -7,6 +7,7 @@ import sys
 from . import Sgit
 
 PATHS = [
+    os.environ.get('SGIT_PATH', None),
     os.path.expanduser('~/.sgit'),
     '/etc/sgit'
 ]
@@ -15,16 +16,23 @@ GIT_CMDS = ['git-receive-pack', 'git-upload-pack']
 
 def get_cfg_path():
     for path in PATHS:
-        cfg_path = os.path.join(path, 'config.json')
-        if os.path.exists(cfg_path):
+        if path is None:
+            continue
+        if os.path.isdir(path):
             return path
+        else:
+            try:
+                os.makedirs(path)
+                return path
+            except:
+                pass
     raise Exception("No config path found!")
 
 def get_ssh_cmd():
-    return sys.environ.get('SSH_ORIGINAL_COMMAND', None)
+    return os.environ.get('SSH_ORIGINAL_COMMAND', None)
 
 def get_sgit_shell_argparse():
-    a = ArgumentParser()
+    a = argparse.ArgumentParser()
     s = a.add_subparsers(dest='cmd')
 
     n = s.add_parser('create-repo')
@@ -40,9 +48,10 @@ def get_sgit_shell_argparse():
 
     return a
 
-def sgit_shell(user):
-    a = ArgumentParser()
+def sgit_shell():
+    a = get_sgit_shell_argparse()
 
+    user = sys.argv[1]
     sgit = Sgit(user, get_cfg_path())
 
     orig_cmd = get_ssh_cmd()
@@ -55,21 +64,18 @@ def sgit_shell(user):
         if sgit.can_push_repo():
             os.execvp('git', ['shell', '-c'] + shlex.split(cmd))
         else:
-            return 1
+            return 2
 
     # Handle sgit world
     args = a.parse_args(shlex.split(orig_cmd))
     if args.cmd == 'create-repo':
         sgit.create_repo(args.path)
-
     elif args.cmd == 'create-user':
         sgit.create_user(args.username, args.ssh_key)
-
     elif args.cmd == 'add-users-to-repo':
         sgit.add_users_to_repo(args.path, args.users)
-
     else:
-        return 1
+        return 3
 
 def sgit():
     print("TODO!")
