@@ -47,7 +47,7 @@ def sgit_shell():
         return 255
     a = get_sgit_shell_argparse()
 
-    user = sys.argv[1]
+    user = sys.argv[2]
     sgit = Sgit(user, get_cfg_path())
 
     orig_cmd = get_ssh_cmd()
