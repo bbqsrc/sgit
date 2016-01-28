@@ -85,6 +85,8 @@ class Sgit:
         self.user = user
 
     def can_push_repo(self, repo_path):
+        if repo_path not in self.config.repos:
+            raise SgitException("Repo '%s' does not exist." % repo_path)
         return self.user in self.config.repos[repo_path]['users']
 
     def can_pull_repo(self, repo_path):
