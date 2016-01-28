@@ -7,7 +7,7 @@ import shlex
 import subprocess
 import sys
 
-CMD = 'command="{cmd} {user}",no-port-forwarding,' \
+CMD = 'command="{user}",no-port-forwarding,' \
       'no-X11-forwarding,no-agent-forwarding,no-pty'
 
 CFG_TMPL = """\
@@ -61,8 +61,7 @@ class SgitConfig:
     def generate_auth_keys_file(self):
         out = io.StringIO()
         for user, key in self.users.items():
-            out.write("%s %s\n" % (
-                CMD.format(cmd="sgit-shell", user=user), key))
+            out.write("%s %s\n" % (CMD.format(user=user), key))
         return out.getvalue()
 
     def save(self):
