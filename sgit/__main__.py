@@ -70,13 +70,13 @@ def sgit_shell():
     if first in GIT_CMDS:
         if GIT_CMDS[first] == 'push':
             if sgit.can_push_repo(cmd_args[1]):
-                subprocess.check_call(['git-shell', '-c'] + cmd_args)
+                subprocess.check_call(['git-shell', '-c', orig_cmd])
             else:
                 sys.stderr.write("Cannot push.\n")
                 return 2
         elif GIT_CMDS[first] == 'pull':
             if sgit.can_pull_repo(cmd_args[1]):
-                subprocess.check_call(['git-shell', '-c'] + cmd_args)
+                subprocess.check_call(['git-shell', '-c', orig_cmd])
             else:
                 sys.stderr.write("Cannot pull.\n")
                 return 2
