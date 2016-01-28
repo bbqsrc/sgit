@@ -85,7 +85,7 @@ class Sgit:
         self.user = user
 
     def can_push_repo(self, repo_path):
-        return user in self.config.repos[repo_path]['users']
+        return self.user in self.config.repos[repo_path]['users']
 
     def can_pull_repo(self, repo_path):
         return self.can_push_repo(repo_path)
