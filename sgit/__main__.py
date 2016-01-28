@@ -66,11 +66,10 @@ def sgit_shell():
     # Handle ordinary git ssh calls
     cmd_args = shlex.split(orig_cmd)
     first = cmd_args[0]
+    sys.stderr.write("%r; %r\n" % (first, cmd_args))
     if first in GIT_CMDS:
         if (GIT_CMDS[first] == 'push' and sgit.can_push_repo(cmd_args[1])) or \
                 (GIT_CMDS[first] == 'pull' and sgit.can_pull_repo(cmd_args[1])):
-            sys.stderr.write("%r\n" % cmd_args)
-            sys.stderr.flush()
             subprocess.check_call(['git-shell', '-c'] + cmd_args)
             sys.stderr.write("Done!\n")
             sys.stderr.flush()
