@@ -49,8 +49,6 @@ def get_sgit_shell_argparse():
 def sgit_shell():
     if len(sys.argv) < 3 or sys.argv[1] != '-c':
         return 255
-    sys.stderr.write("%r\n" % sys.argv)
-    sys.stderr.flush()
 
     a = get_sgit_shell_argparse()
 
@@ -60,13 +58,11 @@ def sgit_shell():
     orig_cmd = get_ssh_cmd()
     if orig_cmd is None:
         return 1
-    sys.stderr.write("%r\n" % orig_cmd)
-    sys.stderr.flush()
 
     # Handle ordinary git ssh calls
     cmd_args = shlex.split(orig_cmd)
     first = cmd_args[0]
-    sys.stderr.write("%r; %r\n" % (first, cmd_args))
+
     if first in GIT_CMDS:
         if GIT_CMDS[first] == 'push':
             if sgit.can_push_repo(cmd_args[1]):
