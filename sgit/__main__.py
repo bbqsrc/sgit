@@ -45,7 +45,8 @@ def get_sgit_shell_argparse():
 def sgit_shell():
     if len(sys.argv) < 3 or sys.argv[1] != '-c':
         return 255
-    print(sys.argv)
+    sys.stderr.write("%r\n" % sys.argv)
+    sys.stderr.flush()
 
     a = get_sgit_shell_argparse()
 
@@ -55,7 +56,8 @@ def sgit_shell():
     orig_cmd = get_ssh_cmd()
     if orig_cmd is None:
         return 1
-    print(orig_cmd)
+    sys.stderr.write("%r\n" % orig_cmd)
+    sys.stderr.flush()
 
     # Handle ordinary git ssh calls
     first_arg = orig_cmd.split(' ', 1)[0]
